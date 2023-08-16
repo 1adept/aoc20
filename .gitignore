@@ -1,0 +1,4 @@
+rust/target/
+haskell/dist-newstyle/
+
+data/*_input.in
