@@ -86,10 +86,11 @@ impl Day for Day02 {
                      password,
                  }| {
                     assert_ne!(0, *min);
-                    assert_ne!(0, *max);
-                    let mut window = password.as_str()[*min..*max].chars();
+                    // (min -1) because no 0-index
+                    let mut window = password.as_str()[(min - 1)..*max].chars();
                     let first = window.next().map(|c| c == *character).unwrap_or(false);
-                    first || window.last().map(|c| c == *character).unwrap_or(false)
+                    // first XOR last
+                    first ^ window.last().map(|c| c == *character).unwrap_or(false)
                 },
             )
             .count()
@@ -103,7 +104,7 @@ mod tests {
     pub const EXAMPLE: &'static str = include_str!("../../data/02_example.in");
 
     #[test]
-    fn test_part11() {
+    fn test_part1() {
         let day = Day02::parse(EXAMPLE);
         assert_eq!(2, day.solve1())
     }
