@@ -92,7 +92,9 @@ executable haskell
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.16.4.0,
-        haskell
+        haskell,
+        text,
+        megaparsec
 
     -- Directories containing source files.
     hs-source-dirs:   app
