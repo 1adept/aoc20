@@ -68,7 +68,11 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.16.4.0
+    build-depends:    
+        base ^>=4.16.4.0,
+        text,
+        split,
+        containers
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -92,9 +96,7 @@ executable haskell
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.16.4.0,
-        haskell,
-        text,
-        megaparsec
+        haskell
 
     -- Directories containing source files.
     hs-source-dirs:   app
