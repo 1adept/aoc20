@@ -1,9 +1,12 @@
 mod day02;
+mod day04;
 
 use std::{env, process};
 
 trait Day {
-    fn parse(text: &str) -> Self;
+    fn parse(text: &str) -> Box<Self>
+    where
+        Self: Sized;
     fn solve1(&self) -> usize;
     fn solve2(&self) -> usize;
 }
@@ -19,8 +22,9 @@ fn main() {
             .parse()
             .expect("Please provide a valid day-number");
         if let Ok(text) = std::fs::read_to_string(path) {
-            let day = match day_number {
+            let day: Box<dyn Day> = match day_number {
                 2 => day02::Day02::parse(&text),
+                4 => day04::Day04::parse(&text),
                 _ if day_number > 25 => unreachable!("Too high"),
                 _ if day_number < 0 => unreachable!("Too low"),
                 _ => todo!("Day not done yet!"),

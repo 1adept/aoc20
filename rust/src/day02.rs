@@ -18,7 +18,7 @@ struct Password {
 }
 
 impl Day for Day02 {
-    fn parse(text: &str) -> Self {
+    fn parse(text: &str) -> Box<Self> {
         let data = text
             .lines()
             .flat_map(|line| {
@@ -55,7 +55,7 @@ impl Day for Day02 {
                 }
             })
             .collect();
-        Self { passwords: data }
+        Box::new(Self { passwords: data })
     }
 
     fn solve1(&self) -> usize {
