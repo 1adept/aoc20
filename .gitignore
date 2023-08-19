@@ -3,3 +3,4 @@ haskell/dist-newstyle/
 
 data/*_input.in
 **/.direnv
+**/.vscode/
