@@ -7,3 +7,4 @@
 | 03  | [Haskell](./haskell/src/day03.hs) |
 | 04  | [Rust](./rust/src/day04.rs) |
 | 05  | [Rust](./rust/src/day05.rs) |
+| 06  | [Rust](./rust/src/day06.rs) |
