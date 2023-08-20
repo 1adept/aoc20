@@ -20,9 +20,9 @@ impl Day for Day05 {
     fn solve2(&self) -> usize {
         let ids: HashSet<u16> = self.0.iter().map(|pass| pass.0).collect();
 
-        for id in 2..1022 {
-            if !ids.contains(&id) && ids.contains(&(id - 1)) && ids.contains(&(id + 1)) {
-                return id as usize;
+        for id in &ids {
+            if !ids.contains(&(id + 1)) && ids.contains(&(id + 2)) {
+                return (id + 1) as usize;
             }
         }
         unreachable!("You have to have a seat ...");
