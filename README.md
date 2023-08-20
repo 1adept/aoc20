@@ -8,3 +8,4 @@
 | 04  | [Rust](./rust/src/day04.rs) |
 | 05  | [Rust](./rust/src/day05.rs) |
 | 06  | [Rust](./rust/src/day06.rs) |
+| 07  | [Rust](./rust/src/day07.rs) |
