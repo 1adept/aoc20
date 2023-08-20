@@ -6,3 +6,4 @@
 | 02  | [Nushell](./nushell/day02.nu)<br>[Rust](./rust/src/day02.rs)<br>[Haskell](./haskell/src/day02.hs) |
 | 03  | [Haskell](./haskell/src/day03.hs) |
 | 04  | [Rust](./rust/src/day04.rs) |
+| 05  | [Rust](./rust/src/day05.rs) |

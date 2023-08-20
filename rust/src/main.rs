@@ -1,5 +1,6 @@
 mod day02;
 mod day04;
+mod day05;
 
 use std::{env, process};
 
@@ -25,6 +26,7 @@ fn main() {
             let day: Box<dyn Day> = match day_number {
                 2 => day02::Day02::parse(&text),
                 4 => day04::Day04::parse(&text),
+                5 => day05::Day05::parse(&text),
                 _ if day_number > 25 => unreachable!("Too high"),
                 _ if day_number < 0 => unreachable!("Too low"),
                 _ => todo!("Day not done yet!"),
