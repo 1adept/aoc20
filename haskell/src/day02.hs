@@ -1,8 +1,7 @@
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Text.Printf (printf)
+import qualified Data.Char as Char
 
 data Password = Password {
   low :: Int,
@@ -13,8 +12,8 @@ data Password = Password {
 
 main :: IO ()
 main = do
-    example <- T.readFile "../data/02_example.in"
-    input <- T.readFile "../data/02_input.in"
+    example <- readFile "../data/02_example.in"
+    input <- readFile "../data/02_input.in"
 
     let ePwd = parse example
     let iPwd = parse input
@@ -47,19 +46,11 @@ solve2 =
       in (first == c) /= (last == c)
   in length . filter isValid
 
-parse :: T.Text -> [Password]
-parse txt =
-    let
-      parse' :: T.Text -> Password
-      parse' t =
-        let
-          words = map T.unpack $ T.words t
-          minmax = head words
-          -- "Cannot find Data.List.Split (splitOn)"
-          -- lh = splitOn "-" minmax
-          low = read . takeWhile (/= '-') $ minmax
-          high = read . drop 1 . dropWhile (/= '-') $ minmax
-          c   = head $ words !! 1
-          pwd = words !! 2
-        in Password low high c pwd
-    in map parse' $ T.lines txt
+parse :: String -> [Password]
+parse txt = map parseLine $ lines txt
+  where parseLine = 
+          let
+            num = read . takeWhile Char.isDigit
+            char = head . take 1
+            pass = tail
+          in Password <$> num <* drop 1 <*> num <*> char <* drop 1 <*> pass

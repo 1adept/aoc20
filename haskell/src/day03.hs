@@ -1,8 +1,7 @@
 module Day03 where
 
-import Data.Text qualified as T
-import Data.Text.IO qualified as T
-import Debug.Trace
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import Text.Printf (printf)
 
 newtype Map a = Map [a]
@@ -38,12 +37,12 @@ solve :: Map T.Text -> [Coord Int] -> Int
 solve = travel
 
 travel :: Map T.Text -> [Coord Int] -> Int
-travel treeMap@(Map m) moves = product $ map f moves
+travel treeMap moves = product $ map f moves
   where
     f move = travelSlope treeMap move (Coord (0, 0)) 0
 
     travelSlope :: Map T.Text -> Coord Int -> Coord Int -> Int -> Int
-    travelSlope map@(Map m) move@(Coord (moveX, moveY)) (Coord (x, y)) count
+    travelSlope tm@(Map m) move@(Coord (moveX, moveY)) (Coord (x, y)) count
       | y >= length m = count
       | otherwise =
           let nextX = flip mod (T.length . head $ m) $ x + moveX
@@ -51,4 +50,4 @@ travel treeMap@(Map m) moves = product $ map f moves
                 if '#' == T.unpack (m !! y) !! x
                   then 1
                   else 0
-           in travelSlope map move (Coord (nextX, y + moveY)) (count + coordValue)
+           in travelSlope tm move (Coord (nextX, y + moveY)) (count + coordValue)
