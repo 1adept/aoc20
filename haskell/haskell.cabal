@@ -72,7 +72,8 @@ library
         base ^>=4.16.4.0,
         text,
         split,
-        containers
+        containers,
+        parsec
 
     -- Directories containing source files.
     hs-source-dirs:   src

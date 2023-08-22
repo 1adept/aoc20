@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 import Text.Printf (printf)
-import qualified Data.Char as Char
 
 data Password = Password {
   low :: Int,
@@ -47,10 +46,18 @@ solve2 =
   in length . filter isValid
 
 parse :: String -> [Password]
-parse txt = map parseLine $ lines txt
-  where parseLine = 
-          let
-            num = read . takeWhile Char.isDigit
-            char = head . take 1
-            pass = tail
-          in Password <$> num <* drop 1 <*> num <*> char <* drop 1 <*> pass
+parse txt =
+    let
+      parse' :: String -> Password
+      parse' t =
+        let
+          words' = words t
+          minmax = head words'
+          -- "Cannot find Data.List.Split (splitOn)"
+          -- lh = splitOn "-" minmax
+          low = read . takeWhile (/= '-') $ minmax
+          high = read . drop 1 . dropWhile (/= '-') $ minmax
+          c   = head $ words' !! 1
+          pwd = words' !! 2
+        in Password low high c pwd
+    in map parse' $ lines txt
