@@ -10,3 +10,4 @@
 | 06  | [Rust](./rust/src/day06.rs) |
 | 07  | [Rust](./rust/src/day07.rs) |
 | 08  | [Haskell](./haskell/src/day08.hs) |
+| 09  | [Rust](./rust/src/day09.rs) |
