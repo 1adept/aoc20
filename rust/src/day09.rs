@@ -15,7 +15,11 @@ impl Day for Day09 {
     }
 
     fn solve2(&self) -> usize {
-        todo!()
+        let key = self.solve1() as u64;
+        let numbers = continuous_numbers_to_sum(&self.0, &key);
+        let min = numbers.iter().min().unwrap();
+        let max = numbers.iter().max().unwrap();
+        (min + max) as usize
     }
 }
 
@@ -41,11 +45,29 @@ fn window_sums_to(numbers: &[u64], sum_to: &u64) -> bool {
     false
 }
 
+fn continuous_numbers_to_sum<'a>(numbers: &'a [u64], sum_to: &u64) -> &'a [u64] {
+    let mut start: usize = 0;
+    let mut end: usize = 1;
+    let mut sum = numbers[0] + numbers[1]; // Min 2 numbers
+
+    while sum != *sum_to {
+        if sum < *sum_to {
+            end += 1;
+            sum += numbers[end];
+        } else {
+            // sum > *sum_to
+            sum -= numbers[start];
+            start += 1;
+        }
+    }
+    &numbers[start..=end]
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{day09::last_preamble, Day};
 
-    use super::Day09;
+    use super::{continuous_numbers_to_sum, Day09};
 
     const EXAMPLE: &'static str = include_str!("../../data/09_example.in");
 
@@ -57,6 +79,12 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        todo!()
+        let day = Day09::parse(EXAMPLE);
+        let key = last_preamble(&day.as_ref().0, 5);
+        let nums = continuous_numbers_to_sum(&day.as_ref().0, &key);
+        let min = nums.iter().min().unwrap();
+        let max = nums.iter().max().unwrap();
+        let res = (min + max) as usize;
+        assert_eq!(62, res);
     }
 }
