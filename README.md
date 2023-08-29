@@ -12,3 +12,4 @@
 | 08  | [Haskell](./haskell/src/day08.hs) |
 | 09  | [Rust](./rust/src/day09.rs) |
 | 10  | [Rust](./rust/src/day10.rs) |
+| 11  | [Rust](./rust/src/day11.rs) |
