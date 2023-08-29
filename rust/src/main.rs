@@ -5,6 +5,7 @@ mod day06;
 mod day07;
 mod day09;
 mod day10;
+mod day11;
 
 use std::{env, process};
 
@@ -35,6 +36,7 @@ fn main() {
                 07 => day07::Day07::parse(&text),
                 09 => day09::Day09::parse(&text),
                 10 => day10::Day10::parse(&text),
+                11 => day11::Day11::parse(&text),
                 _ if day_number > 25 => unreachable!("Too high"),
                 _ if day_number < 0 => unreachable!("Too low"),
                 _ => todo!("Day not done yet!"),
