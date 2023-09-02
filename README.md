@@ -16,7 +16,7 @@
 | &check; | 12  | [Rust](./rust/src/day12.rs) | Part2 works for example but not for input |
 | &check; | 13  | [Rust](./rust/src/day13.rs) | |
 | &check; | 14  | [Rust](./rust/src/day14.rs) | |
-| &cross; | 15  |                             | |
+| &check; | 15  | [Rust](./rust/src/day15.rs) | |
 | &cross; | 16  |                             | |
 | &cross; | 17  |                             | |
 | &cross; | 18  |                             | |
