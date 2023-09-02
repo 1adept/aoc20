@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::Infallible, str::FromStr};
 
 use crate::Day;
 use lazy_static::lazy_static;
@@ -7,13 +7,14 @@ use regex::Regex;
 pub struct Day14(Vec<Value>);
 
 lazy_static! {
+    /// Regex for a mem[x] line
     static ref REGEX_MEM: Regex = Regex::new(r"mem\[(\d+)\] = (\d+)").unwrap();
 }
 
 /// Bitmasks are defined as 36-Bit unsigned int
 /// With either an 'X' (meaning it doesnt overwrite) or a 0/1
 /// Here None values represent the X-es
-type Bits = [Bit; 36];
+struct Bits([Bit; 36]);
 enum Value {
     Mask(Bits),
     Address((u16, Bits)),
@@ -32,7 +33,7 @@ impl Day for Day14 {
     {
         Box::new(Day14(
             text.lines()
-                .take_while(|line| !line.is_empty())
+                .filter(|line| !line.is_empty())
                 .map(Value::from)
                 .collect(),
         ))
@@ -42,7 +43,7 @@ impl Day for Day14 {
         self.0
             .iter()
             .fold(
-                (HashMap::new(), &[Bit::Zero; 36]),
+                (HashMap::new(), &Bits([Bit::Zero; 36])),
                 |(mut adresses, mut mask), instr| {
                     println!("{instr}");
                     match instr {
@@ -70,7 +71,7 @@ impl Day for Day14 {
 
 fn and_v1(left: &Bits, right: &Bits) -> Bits {
     let mut set = [Bit::Zero; 36];
-    for (i, (left_bit, right_bit)) in (0..36).zip(left.iter().zip(right)) {
+    for (i, (left_bit, right_bit)) in (0..36).zip(left.0.iter().zip(right.0)) {
         set[i] = match (left_bit, right_bit) {
             // In v1 Floating get ignored
             (Bit::Floating, r) => r.clone(),
@@ -80,7 +81,7 @@ fn and_v1(left: &Bits, right: &Bits) -> Bits {
             _ => Bit::Zero,
         };
     }
-    set
+    Bits(set)
 }
 
 /// Sets a bit to a specific value
@@ -94,43 +95,61 @@ fn set_bit(value: u64, bit: u64, bit_value: u64) -> u64 {
     new_value
 }
 
+impl FromStr for Bits {
+    // type Err = <[Bit; 36] as TryInto<[Bit; 36]>>::Error;
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Ok(parsed) = s.parse::<u64>() {
+            Ok(Self::from(parsed))
+        } else {
+            Ok(Bits(
+                s.chars()
+                    .rev() // Least significant is arr[0]
+                    .map(|c| match c {
+                        'X' => Bit::Floating,
+                        '1' => Bit::One,
+                        '0' => Bit::Zero,
+                        _ => unreachable!("No such bit"),
+                    })
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .expect("Fail"),
+            ))
+        }
+    }
+}
+
+impl From<u64> for Bits {
+    fn from(value: u64) -> Self {
+        let bits = Bits(
+            (0..36)
+                .into_iter()
+                .map(|i| {
+                    let shifted = 1 << i;
+                    if shifted == shifted & value {
+                        Bit::One
+                    } else {
+                        Bit::Zero
+                    }
+                })
+                .collect::<Vec<_>>()
+                .try_into()
+                .expect("Number cannot be converted to Bits"),
+        );
+        println!("From {value:0>3} -> {bits}");
+        bits
+    }
+}
+
 fn bits_u64(bits: &Bits) -> u64 {
     let res = bits
+        .0
         .iter()
         .enumerate()
         .filter(|(_, bit)| **bit == Bit::One)
         .fold(0, |acc, (i, _)| acc + (1 << i));
     res
-}
-
-fn bits_from_u64(value: u64) -> Bits {
-    (0..36)
-        .into_iter()
-        .map(|i| {
-            if i == (1 << i) & value {
-                Bit::One
-            } else {
-                Bit::Zero
-            }
-        })
-        .collect::<Vec<_>>()
-        .try_into()
-        .unwrap()
-}
-
-fn bits_from_str(value: &str) -> Bits {
-    value
-        .chars()
-        .rev()
-        .map(|c| match c {
-            'X' => Bit::Floating,
-            '1' => Bit::One,
-            '0' => Bit::Zero,
-            _ => unreachable!("No such bit"),
-        })
-        .collect::<Vec<_>>()
-        .try_into()
-        .expect("Cannot try into array")
 }
 
 impl From<&str> for Value {
@@ -140,11 +159,11 @@ impl From<&str> for Value {
             let address = address
                 .parse()
                 .expect(&format!("Cannot parse adresse '{address}'"));
-            let value = bits_from_u64(value.parse().expect(&format!("Cannot parse value {value}")));
+            let value = Bits::from_str(value).expect("Cannot parse");
             Value::Address((address, value))
         } else {
             let len = "mask = ".len();
-            let bits = bits_from_str(&value[len..]);
+            let bits = Bits::from_str(&value[len..]).expect("Couldnt parse bits");
             Value::Mask(bits)
         }
     }
@@ -166,20 +185,23 @@ mod visuals {
         }
     }
 
+    impl Display for Bits {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let str = self
+                .0
+                .iter()
+                .rev()
+                .map(|bit| format!("{bit}"))
+                .collect::<String>();
+            write!(f, "{str}")
+        }
+    }
+
     impl Display for Value {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let format_bits = |bits: &Bits| {
-                bits.iter()
-                    .rev()
-                    .map(|bit| format!("{bit}"))
-                    .collect::<String>()
-            };
-
             let str = match self {
-                Value::Mask(bits) => {
-                    format!("mask: {}", format_bits(bits))
-                }
-                Value::Address((address, bits)) => format!("val{address}: {}", format_bits(bits)),
+                Value::Mask(bits) => format!("mask: {}", bits),
+                Value::Address((address, bits)) => format!("val{address}: {}", bits),
             };
             write!(f, "{str}")
         }
