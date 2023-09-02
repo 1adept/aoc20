@@ -1,4 +1,4 @@
-use std::{collections::HashMap, convert::Infallible, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
 use crate::Day;
 use lazy_static::lazy_static;
@@ -14,11 +14,15 @@ lazy_static! {
 /// Bitmasks are defined as 36-Bit unsigned int
 /// With either an 'X' (meaning it doesnt overwrite) or a 0/1
 /// Here None values represent the X-es
-struct Bits([Bit; 36]);
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct BitMask([Bit; BitMask::LENGTH]);
+
+type BitValue = u64;
 enum Value {
-    Mask(Bits),
-    Address((u16, Bits)),
+    Mask(BitMask),
+    Address((u16, BitValue)),
 }
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Bit {
     Zero,
@@ -43,113 +47,181 @@ impl Day for Day14 {
         self.0
             .iter()
             .fold(
-                (HashMap::new(), &Bits([Bit::Zero; 36])),
-                |(mut adresses, mut mask), instr| {
-                    println!("{instr}");
+                (HashMap::new(), &BitMask::empty()),
+                |(mut space, mut mask), instr| {
                     match instr {
                         Value::Mask(bits) => {
                             mask = bits;
                         }
-                        Value::Address((address, bits)) => {
-                            adresses.insert(address, and_v1(bits, mask));
+                        Value::Address((address, value)) => {
+                            let masked = mask.mask_ignore_floating(*value);
+                            space.insert(address, masked);
                         }
                     }
-                    (adresses, mask)
+                    (space, mask)
                 },
             )
             .0
             .into_values()
-            .map(|bits| bits_u64(&bits))
-            .inspect(|val| println!("{val}"))
             .sum::<u64>() as usize
     }
 
     fn solve2(&self) -> usize {
-        todo!()
+        self.0
+            .iter()
+            .fold(
+                (HashMap::new(), &BitMask::empty()),
+                |(mut space, mut mask), instr| {
+                    match instr {
+                        Value::Mask(bits) => {
+                            mask = bits;
+                        }
+                        Value::Address((address, value)) => {
+                            let addr_bits = &BitMask::from(*address as u64);
+                            let masked_addr = mask.mask_carry_floating(&addr_bits);
+
+                            // All adresses being written to
+                            for addr in masked_addr.unfloat() {
+                                space
+                                    .entry(addr.evaluate())
+                                    .and_modify(|val| {
+                                        *val = value;
+                                    })
+                                    .or_insert(value);
+                            }
+                        }
+                    }
+                    (space, mask)
+                },
+            )
+            .0
+            .into_values()
+            .map(|bits| *bits as u64)
+            .sum::<u64>() as usize
     }
 }
 
-fn and_v1(left: &Bits, right: &Bits) -> Bits {
-    let mut set = [Bit::Zero; 36];
-    for (i, (left_bit, right_bit)) in (0..36).zip(left.0.iter().zip(right.0)) {
-        set[i] = match (left_bit, right_bit) {
-            // In v1 Floating get ignored
-            (Bit::Floating, r) => r.clone(),
-            (l, Bit::Floating) => l.clone(),
-            (Bit::One, _) => Bit::One,
-            (_, Bit::One) => Bit::One,
-            _ => Bit::Zero,
-        };
+impl BitMask {
+    const LENGTH: usize = 36;
+    fn empty() -> Self {
+        BitMask([Bit::Zero; BitMask::LENGTH])
     }
-    Bits(set)
+
+    fn set(&mut self, index: usize, bit: Bit) {
+        self.0[index] = bit;
+    }
+
+    /// Uses self as mask to create a new BitField from bits
+    fn mask_ignore_floating(&self, value: BitValue) -> BitValue {
+        let mut result = value as u64;
+        self.0
+            .iter()
+            .enumerate()
+            .filter(|(_, bit)| **bit != Bit::Floating)
+            .for_each(|(i, bit)| {
+                let shifted = 1 << i;
+                result = match bit {
+                    Bit::Zero => result & !shifted,
+                    Bit::One => result | shifted,
+                    Bit::Floating => unreachable!("Floating filtered"),
+                };
+            });
+        result
+    }
+
+    /// Uses self as mask to create a new BitField from bits
+    fn mask_carry_floating(&self, bits: &BitMask) -> Self {
+        let mut new = BitMask::empty();
+        self.0
+            .iter()
+            .zip(bits.0)
+            .enumerate()
+            .for_each(|(i, (l, r))| {
+                new.set(
+                    i,
+                    match (&l, &r) {
+                        (Bit::Floating, _) | (_, Bit::Floating) => Bit::Floating,
+                        (Bit::One, _) | (_, Bit::One) => Bit::One,
+                        _ => Bit::Zero,
+                    },
+                )
+            });
+        new
+    }
+
+    fn unfloat(&self) -> Vec<BitMask> {
+        let mut bits = vec![BitMask::empty()];
+
+        for i in 0..BitMask::LENGTH {
+            match self.0[i] {
+                Bit::Zero => continue,
+                Bit::One => bits.iter_mut().for_each(|bit| bit.set(i, Bit::One)),
+                Bit::Floating => {
+                    let mut alt: Vec<_> = bits.iter().cloned().collect();
+                    alt.iter_mut().for_each(|bit| bit.set(i, Bit::One));
+                    bits.extend(alt);
+                }
+            }
+        }
+
+        bits
+    }
+
+    fn evaluate(&self) -> u64 {
+        fn eval_inner(bits: &BitMask, index: usize, result: u64) -> u64 {
+            if index >= BitMask::LENGTH {
+                return result;
+            }
+
+            let simple = |res| eval_inner(bits, index + 1, result + res);
+            match bits.0[index] {
+                Bit::One => simple(1 << index),
+                Bit::Zero => simple(0),
+                Bit::Floating => {
+                    let zero = simple(0);
+                    let one = simple(1 << index);
+                    simple(zero + one)
+                }
+            }
+        }
+
+        eval_inner(self, 0, 0)
+    }
 }
 
-/// Sets a bit to a specific value
-///
-/// bit: which bit to set
-/// bit_value: value to set the bit to
-fn set_bit(value: u64, bit: u64, bit_value: u64) -> u64 {
-    let mut new_value = value;
-    new_value = new_value & !(1 << bit); // Unset bit at position
-    new_value |= bit_value << bit; // Set with given value again
-    new_value
-}
-
-impl FromStr for Bits {
-    // type Err = <[Bit; 36] as TryInto<[Bit; 36]>>::Error;
-    type Err = Infallible;
+impl FromStr for BitMask {
+    type Err = <[Bit; BitMask::LENGTH] as TryInto<[Bit; BitMask::LENGTH]>>::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Ok(parsed) = s.parse::<u64>() {
-            Ok(Self::from(parsed))
-        } else {
-            Ok(Bits(
-                s.chars()
-                    .rev() // Least significant is arr[0]
-                    .map(|c| match c {
-                        'X' => Bit::Floating,
-                        '1' => Bit::One,
-                        '0' => Bit::Zero,
-                        _ => unreachable!("No such bit"),
-                    })
-                    .collect::<Vec<_>>()
-                    .try_into()
-                    .expect("Fail"),
-            ))
-        }
-    }
-}
-
-impl From<u64> for Bits {
-    fn from(value: u64) -> Self {
-        let bits = Bits(
-            (0..36)
-                .into_iter()
-                .map(|i| {
-                    let shifted = 1 << i;
-                    if shifted == shifted & value {
-                        Bit::One
-                    } else {
-                        Bit::Zero
-                    }
+        Ok(BitMask(
+            s.chars()
+                .rev() // Least significant is arr[0]
+                .map(|c| match c {
+                    'X' => Bit::Floating,
+                    '1' => Bit::One,
+                    '0' => Bit::Zero,
+                    _ => unreachable!("No such bit"),
                 })
                 .collect::<Vec<_>>()
                 .try_into()
-                .expect("Number cannot be converted to Bits"),
-        );
-        println!("From {value:0>3} -> {bits}");
-        bits
+                .expect("Failed from_str"),
+        ))
     }
 }
 
-fn bits_u64(bits: &Bits) -> u64 {
-    let res = bits
-        .0
-        .iter()
-        .enumerate()
-        .filter(|(_, bit)| **bit == Bit::One)
-        .fold(0, |acc, (i, _)| acc + (1 << i));
-    res
+impl From<u64> for BitMask {
+    fn from(value: u64) -> Self {
+        (0..BitMask::LENGTH)
+            .into_iter()
+            .map(|i| (i, 1 << i))
+            .take_while(|(_, shifted)| shifted < &value)
+            .fold(BitMask::empty(), |mut bits, (i, shifted)| {
+                if shifted & value == shifted {
+                    bits.set(i, Bit::One);
+                }
+                bits
+            })
+    }
 }
 
 impl From<&str> for Value {
@@ -159,11 +231,13 @@ impl From<&str> for Value {
             let address = address
                 .parse()
                 .expect(&format!("Cannot parse adresse '{address}'"));
-            let value = Bits::from_str(value).expect("Cannot parse");
+            let value: BitValue = value
+                .parse()
+                .expect(&format!("Cannot parse value '{value}'"));
             Value::Address((address, value))
         } else {
             let len = "mask = ".len();
-            let bits = Bits::from_str(&value[len..]).expect("Couldnt parse bits");
+            let bits = BitMask::from_str(&value[len..]).expect("Couldnt parse bits");
             Value::Mask(bits)
         }
     }
@@ -172,7 +246,7 @@ impl From<&str> for Value {
 mod visuals {
     use std::fmt::Display;
 
-    use super::{Bit, Bits, Value};
+    use super::{Bit, BitMask, Value};
 
     impl Display for Bit {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -185,14 +259,17 @@ mod visuals {
         }
     }
 
-    impl Display for Bits {
+    impl Display for BitMask {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let str = self
-                .0
-                .iter()
-                .rev()
-                .map(|bit| format!("{bit}"))
-                .collect::<String>();
+            let mut str = String::with_capacity(36);
+            for bit in self.0.iter().rev() {
+                let cha = match bit {
+                    Bit::Zero => '0',
+                    Bit::One => '1',
+                    Bit::Floating => 'X',
+                };
+                str.push(cha);
+            }
             write!(f, "{str}")
         }
     }
@@ -210,22 +287,62 @@ mod visuals {
 
 #[cfg(test)]
 mod tests {
+    use super::{BitMask, Day14};
     use crate::Day;
+    use std::str::FromStr;
 
-    use super::Day14;
-
-    const EXAMPLE: &'static str = include_str!("../../data/14_example.in");
+    const EXAMPLE1: &'static str = include_str!("../../data/14_example.in");
+    const EXAMPLE2: &'static str = include_str!("../../data/14_example2.in");
 
     #[test]
     fn test_part1() {
-        let day = Day14::parse(EXAMPLE);
+        let day = Day14::parse(EXAMPLE1);
         assert_eq!(165, day.solve1());
     }
 
     #[test]
-    #[ignore = "todo"]
+    fn test_bits_conversion() {
+        let ass =
+            |num: u64, str: &str| assert_eq!(BitMask::from(num), BitMask::from_str(str).unwrap());
+
+        ass(42, "000000000000000000000000000000101010");
+        ass(26, "000000000000000000000000000000011010");
+        ass(27, "000000000000000000000000000000011011");
+        ass(58, "000000000000000000000000000000111010");
+        ass(59, "000000000000000000000000000000111011");
+    }
+
+    #[test]
+    fn test_unfloat() {
+        let adr = BitMask::from_str("000000000000000000000000000000101010").unwrap();
+        let msk = BitMask::from_str("000000000000000000000000000000X1001X").unwrap();
+        let res = BitMask::from_str("000000000000000000000000000000X1101X").unwrap();
+        assert_eq!(res, msk.mask_carry_floating(&adr));
+
+        let x1 = BitMask::from_str("000000000000000000000000000000011010").unwrap();
+        let x2 = BitMask::from_str("000000000000000000000000000000011011").unwrap();
+        let x3 = BitMask::from_str("000000000000000000000000000000111010").unwrap();
+        let x4 = BitMask::from_str("000000000000000000000000000000111011").unwrap();
+        let xs = vec![x1, x2, x3, x4];
+        assert_eq!(xs, res.unfloat());
+    }
+
+    #[test]
+    fn test_mask_v2() {
+        let mem = BitMask::from(42);
+        let msk = BitMask::from_str("000000000000000000000000000000X1001X").unwrap();
+        let res = BitMask::from_str("000000000000000000000000000000X1101X").unwrap();
+        assert_eq!(res, msk.mask_carry_floating(&mem));
+
+        let mem = BitMask::from_str("000000000000000000000000000000011010").unwrap();
+        let msk = BitMask::from_str("00000000000000000000000000000000X0XX").unwrap();
+        let res = BitMask::from_str("00000000000000000000000000000001X0XX").unwrap();
+        assert_eq!(res, msk.mask_carry_floating(&mem));
+    }
+
+    #[test]
     fn test_part2() {
-        let day = Day14::parse(EXAMPLE);
-        // assert_eq!(?, day.solve2());
+        let day = Day14::parse(EXAMPLE2);
+        assert_eq!(208, day.solve2());
     }
 }
