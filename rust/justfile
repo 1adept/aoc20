@@ -1,0 +1,12 @@
+
+@default:
+	just --list
+
+run DAY:
+	cargo run {{DAY}} "../data/{{DAY}}_input.in"
+
+test DAY:
+	cargo test {{DAY}}
+
+watch DAY:
+	cargo watch -x "test {{DAY}}"
