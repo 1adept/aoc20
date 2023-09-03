@@ -1,6 +1,6 @@
 //! Trying Rc<[T]> instead of Vec<T> as suggested by https://youtu.be/A4cKi7PTJSs?si=jT-fZbZp8QOg_dGV
 
-//! Resut: Its supposed to be more efficient but there were some troubles with them. Its not much hassle when used as a field in a struct and its only accessed but not modified. Otherwise a vec is more convenient
+//! Result: Its supposed to be more efficient but there were some troubles with them. Its not much hassle when used as a field in a struct and its only accessed but not modified. Otherwise a vec is more convenient
 
 use std::{collections::BTreeMap, ops::RangeInclusive, rc::Rc};
 
