@@ -7,7 +7,7 @@ export def load [
   year:int             # Year to get
   session_token:string # Session-session_token cookie
   day?:int             # Load a single day
-  --location(-l): path # Location to save the data to. Default to './data/'
+  --location(-l): path # Location to save the data to.
   -y                   # Assume yes to all
 ] { 
   mut days = [$day]
