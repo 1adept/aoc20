@@ -11,7 +11,7 @@ export def load [
   -y                   # Assume yes to all
 ] { 
   mut days = [$day]
-  let days = if (null == $day) {
+  if (null == $day) {
     let current_day = (date now | date to-table | get day | get 0 | into int)
     let remaining_days = (
       0..25
@@ -27,25 +27,30 @@ export def load [
     } 
   }
 
+  if ( $days | is-empty ) {
+    print $"No days given. Bye"
+    return
+  }
+
   mut location = $location  
   if (null == $location) {
     $location = (glob -F -S **/data* | input list "Pick location to save data to...")
   }
     
   let base_url = $"https://adventofcode.com/($year)/day"
-  for $day in $days {
-    let day_filled = if ( $day < 10 ) {
-      ($day | fill --alignment right --character '0' --width 2)
+  for $d in $days {
+    let day_filled = if ( $d < 10 ) {
+      ($d | fill --alignment right --character '0' --width 2)
     } else {
-      $day
+      $d
     }
     let save_location = $"($location)/($day_filled)_input.in"
     if ( 
       ($save_location | path exists)
-      and ($y 
-        or ("No" == (
+      and (not $y)
+      and ("No" == (
           ["No" "Yes"] 
-          | input list $"File '($save_location)' exists. Overwrite?")
+          | input list $"File '($save_location)' exists. Overwrite?"i
         ))
     ) {
       # print "Skipping ($day). File exists."
