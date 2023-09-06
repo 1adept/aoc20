@@ -225,7 +225,7 @@ mod tests {
     use super::Day16;
 
     const EXAMPLE: &'static str = include_str!("../../data/16_example.in");
-    const EXAMPLE2: &'static str = include_str!("../../data/16_example2.in");
+    // const EXAMPLE2: &'static str = include_str!("../../data/16_example2.in");
 
     #[test]
     fn test_part1() {
@@ -234,10 +234,6 @@ mod tests {
     }
 
     #[test]
-    // #[ignore = "no example given"]
-    fn test_part2() {
-        let day = Day16::parse(EXAMPLE2);
-        // assert_eq!(99999999, day.solve2());
-        assert_eq!(0, day.solve2());
-    }
+    #[ignore = "no example given"]
+    fn test_part2() {}
 }
