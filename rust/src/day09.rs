@@ -35,8 +35,7 @@ fn window_sums_to(numbers: &[u64], sum_to: &u64) -> bool {
     let size = numbers.len();
     for i in 0..size {
         let first = numbers[i];
-        for j in (i + 1)..size {
-            let second = numbers[j];
+        for second in numbers.iter().skip(i + 1).take(size) {
             if (first + second) == *sum_to {
                 return true;
             }

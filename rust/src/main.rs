@@ -35,12 +35,12 @@ fn main() {
             .expect("Please provide a valid day-number");
         if let Ok(text) = std::fs::read_to_string(path) {
             let day: Box<dyn Day> = match day_number {
-                02 => day02::Day02::parse(&text),
-                04 => day04::Day04::parse(&text),
-                05 => day05::Day05::parse(&text),
-                06 => day06::Day06::parse(&text),
-                07 => day07::Day07::parse(&text),
-                09 => day09::Day09::parse(&text),
+                2 => day02::Day02::parse(&text),
+                4 => day04::Day04::parse(&text),
+                5 => day05::Day05::parse(&text),
+                6 => day06::Day06::parse(&text),
+                7 => day07::Day07::parse(&text),
+                9 => day09::Day09::parse(&text),
                 10 => day10::Day10::parse(&text),
                 11 => day11::Day11::parse(&text),
                 12 => day12::Day12::parse(&text),
