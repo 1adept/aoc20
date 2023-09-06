@@ -72,7 +72,7 @@ mod tests {
     use super::Day13;
     use crate::Day;
 
-    const EXAMPLE: &'static str = include_str!("../../data/13_example.in");
+    const EXAMPLE: &str = include_str!("../../data/13_example.in");
 
     #[test]
     fn test_part1() {

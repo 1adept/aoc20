@@ -101,7 +101,7 @@ impl Day for Day02 {
 mod tests {
     use crate::{day02::Day02, Day};
 
-    pub const EXAMPLE: &'static str = include_str!("../../data/02_example.in");
+    pub const EXAMPLE: &str = include_str!("../../data/02_example.in");
 
     #[test]
     fn test_part1() {

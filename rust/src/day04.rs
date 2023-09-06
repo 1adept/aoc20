@@ -97,7 +97,7 @@ impl Passport {
             && self.eyr.is_some_and(|y| is_between(y, 2020, 2030))
             && self.byr.is_some_and(|y| is_between(y, 1920, 2002))
             && self.hgt.as_ref().is_some_and(|hgt| {
-                if let Some(cap) = REGEX_HGT.captures(&hgt) {
+                if let Some(cap) = REGEX_HGT.captures(hgt) {
                     let [h, unit] = cap.extract::<2>().1;
                     let height = h.parse().unwrap();
                     match unit {
@@ -130,7 +130,7 @@ impl Display for Passport {
 mod tests {
     use crate::{day04, Day};
 
-    const EXAMPLE: &'static str = include_str!("../../data/04_example.in");
+    const EXAMPLE: &str = include_str!("../../data/04_example.in");
 
     #[test]
     fn test_part1() {

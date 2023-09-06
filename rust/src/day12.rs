@@ -128,7 +128,7 @@ impl From<&str> for Instruction {
 /// It just exists as a reminder
 fn manhattan_distance(_: (isize, isize), to: (isize, isize)) -> usize {
     // from is always 0 in this case because ship starts at (0, 0)
-    to.0.abs() as usize + to.1.abs() as usize
+    to.0.unsigned_abs() + to.1.unsigned_abs()
 }
 
 impl Navigable {
@@ -179,7 +179,7 @@ mod tests {
     use super::{Day12, Dir, Navigable, Turn};
     use crate::Day;
 
-    const EXAMPLE: &'static str = include_str!("../../data/12_example.in");
+    const EXAMPLE: &str = include_str!("../../data/12_example.in");
 
     #[test]
     fn test_ship_turn() {

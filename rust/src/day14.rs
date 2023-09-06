@@ -78,7 +78,7 @@ impl Day for Day14 {
                         }
                         Value::Address((address, value)) => {
                             let addr_bits = &BitMask::from(*address as u64);
-                            let masked_addr = mask.mask_carry_floating(&addr_bits);
+                            let masked_addr = mask.mask_carry_floating(addr_bits);
 
                             // All adresses being written to
                             for addr in masked_addr.unfloat() {
@@ -95,8 +95,7 @@ impl Day for Day14 {
                 },
             )
             .0
-            .into_values()
-            .map(|bits| *bits as u64)
+            .into_values().copied()
             .sum::<u64>() as usize
     }
 }
@@ -113,7 +112,7 @@ impl BitMask {
 
     /// Uses self as mask to create a new BitField from bits
     fn mask_ignore_floating(&self, value: BitValue) -> BitValue {
-        let mut result = value as u64;
+        let mut result = value;
         self.0
             .iter()
             .enumerate()
@@ -157,7 +156,7 @@ impl BitMask {
                 Bit::Zero => continue,
                 Bit::One => bits.iter_mut().for_each(|bit| bit.set(i, Bit::One)),
                 Bit::Floating => {
-                    let mut alt: Vec<_> = bits.iter().cloned().collect();
+                    let mut alt: Vec<_> = bits.to_vec();
                     alt.iter_mut().for_each(|bit| bit.set(i, Bit::One));
                     bits.extend(alt);
                 }
@@ -212,7 +211,6 @@ impl FromStr for BitMask {
 impl From<u64> for BitMask {
     fn from(value: u64) -> Self {
         (0..BitMask::LENGTH)
-            .into_iter()
             .map(|i| (i, 1 << i))
             .take_while(|(_, shifted)| shifted < &value)
             .fold(BitMask::empty(), |mut bits, (i, shifted)| {
@@ -230,10 +228,10 @@ impl From<&str> for Value {
             let [address, value] = captures.extract().1;
             let address = address
                 .parse()
-                .expect(&format!("Cannot parse adresse '{address}'"));
+                .unwrap_or_else(|_| panic!("Cannot parse adresse '{address}'"));
             let value: BitValue = value
                 .parse()
-                .expect(&format!("Cannot parse value '{value}'"));
+                .unwrap_or_else(|_| panic!("Cannot parse value '{value}'"));
             Value::Address((address, value))
         } else {
             let len = "mask = ".len();
@@ -291,8 +289,8 @@ mod tests {
     use crate::Day;
     use std::str::FromStr;
 
-    const EXAMPLE1: &'static str = include_str!("../../data/14_example.in");
-    const EXAMPLE2: &'static str = include_str!("../../data/14_example2.in");
+    const EXAMPLE1: &str = include_str!("../../data/14_example.in");
+    const EXAMPLE2: &str = include_str!("../../data/14_example2.in");
 
     #[test]
     fn test_part1() {

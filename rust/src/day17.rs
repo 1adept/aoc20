@@ -103,37 +103,30 @@ impl Cube {
 
 impl Position {
     fn surrounding3(&self) -> Box<dyn Iterator<Item = Position>> {
-        let x = self.x.clone();
-        let y = self.y.clone();
-        let z = self.z.clone();
+        let x = self.x;
+        let y = self.y;
+        let z = self.z;
         Box::new(
             (x - 1..=x + 1)
-                .into_iter()
                 .flat_map(move |x| {
-                    (y - 1..=y + 1).into_iter().flat_map(move |y| {
-                        (z - 1..=z + 1)
-                            .into_iter()
-                            .map(move |z| Position { x, y, z, w: 0 })
-                    })
+                    (y - 1..=y + 1)
+                        .flat_map(move |y| (z - 1..=z + 1).map(move |z| Position { x, y, z, w: 0 }))
                 })
                 .filter(move |p| !(p.x == x && p.y == y && p.z == z)),
         )
     }
 
     fn surrounding4(&self) -> Box<dyn Iterator<Item = Position>> {
-        let x = self.x.clone();
-        let y = self.y.clone();
-        let z = self.z.clone();
-        let w = self.w.clone();
+        let x = self.x;
+        let y = self.y;
+        let z = self.z;
+        let w = self.w;
         Box::new(
             (x - 1..=x + 1)
-                .into_iter()
                 .flat_map(move |x| {
-                    (y - 1..=y + 1).into_iter().flat_map(move |y| {
-                        (z - 1..=z + 1).into_iter().flat_map(move |z| {
-                            (w - 1..=w + 1)
-                                .into_iter()
-                                .map(move |w| Position { x, y, z, w })
+                    (y - 1..=y + 1).flat_map(move |y| {
+                        (z - 1..=z + 1).flat_map(move |z| {
+                            (w - 1..=w + 1).map(move |w| Position { x, y, z, w })
                         })
                     })
                 })
@@ -209,7 +202,7 @@ mod tests {
 
     use super::Day17;
 
-    const EXAMPLE: &'static str = include_str!("../../data/17_example.in");
+    const EXAMPLE: &str = include_str!("../../data/17_example.in");
 
     #[test]
     fn test_cube_indexing() {

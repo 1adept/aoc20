@@ -32,7 +32,7 @@ impl Day for Day07 {
 
     /// This solution is kinda bad
     fn solve1(&self) -> usize {
-        const GOLD: &'static str = "shiny gold";
+        const GOLD: &str = "shiny gold";
         let mut contains_gold = vec![GOLD];
 
         let mut to_check = self
@@ -60,7 +60,7 @@ impl Day for Day07 {
     }
 
     fn solve2(&self) -> usize {
-        const GOLD: &'static str = "shiny gold";
+        const GOLD: &str = "shiny gold";
 
         let mapped = self
             .0
@@ -115,8 +115,8 @@ mod tests {
 
     use super::Day07;
 
-    const EXAMPLE_1: &'static str = include_str!("../../data/07_example.in");
-    const EXAMPLE_2: &'static str = include_str!("../../data/07_example2.in");
+    const EXAMPLE_1: &str = include_str!("../../data/07_example.in");
+    const EXAMPLE_2: &str = include_str!("../../data/07_example2.in");
 
     #[test]
     fn test_part1() {

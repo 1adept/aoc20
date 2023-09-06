@@ -70,8 +70,8 @@ fn num_arrangements(adapters: &[usize]) -> usize {
 mod tests {
     use crate::{day10::Day10, Day};
 
-    const EXAMPLE_1: &'static str = include_str!("../../data/10_example1.in");
-    const EXAMPLE_2: &'static str = include_str!("../../data/10_example2.in");
+    const EXAMPLE_1: &str = include_str!("../../data/10_example1.in");
+    const EXAMPLE_2: &str = include_str!("../../data/10_example2.in");
 
     #[test]
     fn test_part1() {

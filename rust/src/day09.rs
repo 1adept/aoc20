@@ -69,7 +69,7 @@ mod tests {
 
     use super::{continuous_numbers_to_sum, Day09};
 
-    const EXAMPLE: &'static str = include_str!("../../data/09_example.in");
+    const EXAMPLE: &str = include_str!("../../data/09_example.in");
 
     #[test]
     fn test_part1() {

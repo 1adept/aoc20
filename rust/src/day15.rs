@@ -12,11 +12,11 @@ impl Day for Day15 {
         Self: Sized,
     {
         Box::new(Day15(
-            text.split_terminator(",")
+            text.split_terminator(',')
                 .map(|str| {
                     str.trim_end()
                         .parse()
-                        .expect(&format!("Cant parse '{str}'"))
+                        .unwrap_or_else(|_| panic!("Cant parse '{str}'"))
                 })
                 .collect(),
         ))
@@ -36,7 +36,7 @@ fn solve_number_game(numbers: &[Number], rounds: usize) -> usize {
     let mut mentions: BTreeMap<Number, usize> =
         BTreeMap::from_iter(numbers.iter().enumerate().map(|(i, num)| (*num, i + 1)));
 
-    let mut last = numbers.last().unwrap().clone();
+    let mut last = *numbers.last().unwrap();
     for i in (numbers.len() + 1)..=rounds {
         let say = if let Some(mention) = mentions.get(&last) {
             (i - 1).abs_diff(*mention)
@@ -56,7 +56,7 @@ mod tests {
 
     use super::Day15;
 
-    const EXAMPLE: &'static str = include_str!("../../data/15_example.in");
+    const EXAMPLE: &str = include_str!("../../data/15_example.in");
 
     #[test]
     fn test_part1() {

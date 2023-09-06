@@ -47,7 +47,7 @@ impl Day for Day11 {
                     {
                         Cell::Empty
                     }
-                    (c, _) => c.clone(),
+                    (c, _) => *c,
                 },
             )
         };
@@ -75,7 +75,7 @@ impl Day for Day11 {
                     (Cell::Empty, nbs) if nbs.iter().all(|n| **n != Cell::Occupied) => {
                         Cell::Occupied
                     }
-                    (c, _) => c.clone(),
+                    (c, _) => *c,
                 },
             )
         };
@@ -249,14 +249,14 @@ impl Map {
 
     fn iter(&self) -> MapIterator {
         MapIterator {
-            map: &self,
+            map: self,
             index: 0,
         }
     }
 
     fn cells(&self) -> MapCellIterator {
         MapCellIterator {
-            map: &self,
+            map: self,
             index: 0,
         }
     }
@@ -348,7 +348,7 @@ mod tests {
 
     use super::Day11;
 
-    const EXAMPLE: &'static str = include_str!("../../data/11_example.in");
+    const EXAMPLE: &str = include_str!("../../data/11_example.in");
 
     // #[test]
     // fn test_index() {

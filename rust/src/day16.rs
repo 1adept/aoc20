@@ -49,8 +49,8 @@ impl Day for Day16 {
                     .split(" or ")
                     .map(|range| {
                         let (min, max) = range.trim().split_once('-').expect("No range");
-                        let min = min.parse().expect(&format!("Couldnt parse '{min}'"));
-                        let max = max.parse().expect(&format!("Couldnt parse '{max}'"));
+                        let min = min.parse().unwrap_or_else(|_| panic!("Couldnt parse '{min}'"));
+                        let max = max.parse().unwrap_or_else(|_| panic!("Couldnt parse '{max}'"));
                         min..=max
                     })
                     .collect();
@@ -98,7 +98,7 @@ impl Day for Day16 {
             .filter(|number| {
                 self.rules
                     .iter()
-                    .all(|rule_class| !rule_class.is_valid_number(&number))
+                    .all(|rule_class| !rule_class.is_valid_number(number))
             })
             .sum()
     }
@@ -208,7 +208,7 @@ fn filter_tickets_by_status<'a>(
 
 impl RuleClass {
     fn is_valid_number(&self, number: &usize) -> bool {
-        self.rules.iter().any(|rule| rule.contains(&number))
+        self.rules.iter().any(|rule| rule.contains(number))
     }
 
     fn is_ticket_valid(&self, ticket: &Ticket) -> bool {
@@ -224,7 +224,7 @@ mod tests {
 
     use super::Day16;
 
-    const EXAMPLE: &'static str = include_str!("../../data/16_example.in");
+    const EXAMPLE: &str = include_str!("../../data/16_example.in");
     // const EXAMPLE2: &'static str = include_str!("../../data/16_example2.in");
 
     #[test]

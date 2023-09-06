@@ -18,7 +18,7 @@ impl Day for Day06 {
                     .map(|line| line.chars().collect())
                     .collect::<Vec<_>>()
             })
-            .map(|answers| GroupAnswers(answers))
+            .map(GroupAnswers)
             .collect::<Vec<_>>();
         Box::new(Day06(groups))
     }
@@ -48,7 +48,7 @@ impl Day for Day06 {
 impl GroupAnswers {
     fn unique_answers(&self) -> HashSet<char> {
         self.0.iter().fold(HashSet::new(), |acc, next| {
-            acc.union(&next).cloned().collect::<HashSet<_>>()
+            acc.union(next).cloned().collect::<HashSet<_>>()
         })
     }
 }
@@ -59,7 +59,7 @@ mod tests {
 
     use super::Day06;
 
-    const EXAMPLE: &'static str = include_str!("../../data/06_example.in");
+    const EXAMPLE: &str = include_str!("../../data/06_example.in");
 
     #[test]
     fn test_part1() {
