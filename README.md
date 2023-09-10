@@ -19,7 +19,7 @@
 | &check; | 15  | [Rust](./rust/src/day15.rs) | |
 | &check; | 16  | [Rust](./rust/src/day16.rs) | |
 | &check; | 17  | [Rust](./rust/src/day17.rs) | |
-| &cross; | 18  |                             | |
+| &check; | 18  | [Rust](./rust/src/day18.rs) | |
 | &cross; | 19  |                             | |
 | &cross; | 20  |                             | |
 | &cross; | 21  |                             | |
