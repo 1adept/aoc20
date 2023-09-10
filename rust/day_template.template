@@ -1,0 +1,42 @@
+use crate::Day;
+
+pub struct DayXX;
+
+impl Day for DayXX {
+    fn parse(text: &str) -> Box<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+
+    fn solve1(&self) -> usize {
+        todo!()
+    }
+
+    fn solve2(&self) -> usize {
+        todo!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Day;
+
+    use super::DayXX;
+
+    const EXAMPLE: &str = include_str!("../../data/XX_example.in");
+
+    #[test]
+    fn test_part1() {
+        let day = DayXX::parse(EXAMPLE);
+        assert_eq!(0, day.solve1());
+    }
+
+    #[test]
+    #[ignore = "complete part1 first"]
+    fn test_part1() {
+        let day = DayXX::parse(EXAMPLE);
+        assert_eq!(0, day.solve2());
+    }
+}
