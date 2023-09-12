@@ -20,7 +20,7 @@
 | &check; | 16  | [Rust](./rust/src/day16.rs) | |
 | &check; | 17  | [Rust](./rust/src/day17.rs) | |
 | &check; | 18  | [Rust](./rust/src/day18.rs) | |
-| &cross; | 19  |                             | |
+| &cross; | 19  | [Rust](./rust/src/day19.rs) | Part2 doesnt work |
 | &cross; | 20  |                             | |
 | &cross; | 21  |                             | |
 | &cross; | 22  |                             | |
