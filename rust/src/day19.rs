@@ -64,21 +64,21 @@ impl Day for Day19 {
         let mut rules = self.rules.clone();
         replace_rules_8_11(&mut rules);
         count_rule0_matches(&rules, &self.messages)
+        // 177 TOO LOW
+        // 267 TOO HIGH
     }
 }
 
 fn count_rule0_matches(rules: &[Option<Rule>], messages: &[Message]) -> usize {
-    // WTF is this ?
-    let rule0 = rules.first().unwrap().as_ref().cloned().unwrap();
+    // WTF is this monstrosity ?
+    let rule0 = rules.first().unwrap().as_ref().unwrap();
     messages
         .iter()
         .filter(|msg| {
             let mut matcher = RuleMatcher::new(&msg.0);
             matcher.apply(&rule0, rules);
-            println!("Matcher on {msg:?} done: {matcher:?}");
             matcher.matches()
         })
-        .inspect(|msg| println!("{msg:?} matches"))
         .count()
 }
 
@@ -114,12 +114,14 @@ impl<'a> RuleMatcher<'a> {
     fn new(msg: &'a str) -> Self {
         Self {
             msg: Some(msg),
+            /// Tracks to-check rules to guard against inf-loops
             todo: 0,
         }
     }
 
     fn matches(&self) -> bool {
-        self.msg.is_some_and(|str| str.is_empty() && self.todo == 0)
+        // Does todo need to be 0 ???
+        self.msg.is_some_and(|str| str.is_empty())
     }
 
     fn can_match(&self) -> bool {
@@ -138,12 +140,10 @@ impl<'a> RuleMatcher<'a> {
         } else {
             match rule {
                 Rule::Match(c) => {
-                    let temp = self.msg;
                     self.msg = self
                         .msg
                         .filter(|msg| msg.starts_with(*c))
                         .map(|msg| &msg[1..]);
-                    println!("{c} // {temp:?} => {:?}", self.msg);
                     self.todo -= 1;
                 }
                 Rule::MatchRef(left, right) => {
@@ -152,12 +152,13 @@ impl<'a> RuleMatcher<'a> {
                             .flat_map(|rule_index| rules[*rule_index].as_ref())
                             .fold(
                                 RuleMatcher {
+                                    // side is next todo but 'this' is done
                                     todo: self.todo + side.len() - 1,
                                     ..*self
                                 },
-                                |mut temp, rule| {
-                                    temp.apply(rule, rules);
-                                    temp
+                                |mut matcher, rule| {
+                                    matcher.apply(rule, rules);
+                                    matcher
                                 },
                             )
                     };
@@ -165,10 +166,13 @@ impl<'a> RuleMatcher<'a> {
                     if let Some(next) = [left, right]
                         .iter()
                         .filter(|list| !list.is_empty())
-                        .map(|list| match_side(&list))
-                        .find(|list| list.can_match())
+                        .map(|list| match_side(list))
+                        // Only match with 'can_match' bc this may not be the last rule to match
+                        .find(|matcher| matcher.can_match())
                     {
                         self.msg = next.msg;
+                        // todo shouldnt matter
+                        // *self = next;
                     } else {
                         self.fail();
                     }
@@ -193,7 +197,6 @@ mod tests {
     }
 
     #[test]
-    // #[ignore = "todo"]
     fn test_part2_no_replace() {
         let day = Day19::parse(EXAMPLE2);
         let no_replace = count_rule0_matches(&day.rules, &day.messages);
@@ -201,28 +204,28 @@ mod tests {
     }
 
     #[test]
-    // #[ignore = "todo"]
     fn test_part2_replace() {
         let mut day = Day19::parse(EXAMPLE2);
-        // assert_eq!(12, day.solve2());
+        assert_eq!(12, day.solve2());
+
         replace_rules_8_11(&mut day.rules);
         let rule0 = day.rules.first().unwrap().as_ref().unwrap();
         [
-            // (false, "abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa"),
-            // (true, "bbabbbbaabaabba"),
-            // (true, "babbbbaabbbbbabbbbbbaabaaabaaa"),
-            // (true, "aaabbbbbbaaaabaababaabababbabaaabbababababaaa"),
-            // (true, "bbbbbbbaaaabbbbaaabbabaaa"),
-            // (true, "bbbababbbbaaaaaaaabbababaaababaabab"),
-            // (true, "ababaaaaaabaaab"),
-            // (true, "ababaaaaabbbaba"),
-            // (true, "baabbaaaabbaaaababbaababb"),
-            // (true, "abbbbabbbbaaaababbbbbbaaaababb"),
-            // (true, "aaaaabbaabaaaaababaa"),
+            (false, "abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa"),
+            (true, "bbabbbbaabaabba"),
+            (true, "babbbbaabbbbbabbbbbbaabaaabaaa"),
+            (true, "aaabbbbbbaaaabaababaabababbabaaabbababababaaa"),
+            (true, "bbbbbbbaaaabbbbaaabbabaaa"),
+            (true, "bbbababbbbaaaaaaaabbababaaababaabab"),
+            (true, "ababaaaaaabaaab"),
+            (true, "ababaaaaabbbaba"),
+            (true, "baabbaaaabbaaaababbaababb"),
+            (true, "abbbbabbbbaaaababbbbbbaaaababb"),
+            (true, "aaaaabbaabaaaaababaa"),
             (false, "aaaabbaaaabbaaa"),
-            // (true, "aaaabbaabbaaaaaaabbbabbbaaabbaabaaa"),
-            // (false, "babaaabbbaaabaababbaabababaaab"),
-            // (true, "aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"),
+            (true, "aaaabbaabbaaaaaaabbbabbbaaabbaabaaa"),
+            (false, "babaaabbbaaabaababbaabababaaab"),
+            (true, "aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"),
         ]
         .into_iter()
         .for_each(|(expected, str)| {
@@ -230,7 +233,7 @@ mod tests {
             matcher.apply(rule0, &day.rules);
             let result = matcher.matches();
             if expected != result {
-                println!("Wrong for {str}");
+                println!("Wrong for {str} ({matcher:?})");
             }
             assert!(expected == result)
         })
